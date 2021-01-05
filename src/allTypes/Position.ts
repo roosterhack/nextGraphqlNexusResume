@@ -1,0 +1,40 @@
+import { objectType } from '@nexus/schema';
+import { differenceInYears, differenceInMonths } from 'date-fns';
+
+export const Position = objectType({
+  name: 'Position',
+  definition(t) {
+    t.id('id');
+    t.string('title');
+    t.string('company');
+    t.date('startDate', {
+      description: 'When I started at this position',
+      resolve: (position: { startDate: string | number | Date }) =>
+        new Date(position.startDate),
+    });
+    t.date('endDate', {
+      nullable: true,
+      resolve: (position: { endDate: string | number | Date }) =>
+        position.endDate ? new Date(position.endDate) : null,
+    });
+    t.int('years', {
+      resolve: ({ endDate, startDate }) =>
+        differenceInYears(
+          endDate ? new Date(endDate) : new Date(),
+          new Date(startDate)
+        ),
+    });
+    t.int('months', {
+      resolve: ({ endDate, startDate }) =>
+        differenceInMonths(
+          endDate ? new Date(endDate) : new Date(),
+          new Date(startDate)
+        ) % 12,
+    });
+    t.list.string('achievements', {
+      resolve: (position) => position.achievements,
+    });
+    t.string('employmentType');
+    t.string('location');
+  },
+});
